@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysMemberLevelMapper">
+    <resultMap type="com.ruoyi.system.domain.SysMemberLevel" id="SysMemberLevelResult">
+        <result property="levelId" column="level_id"/>
+        <result property="levelName" column="level_name"/>
+        <result property="levelCode" column="level_code"/>
+        <result property="minPoints" column="min_points"/>
+        <result property="maxPoints" column="max_points"/>
+        <result property="discount" column="discount"/>
+        <result property="sort" column="sort"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="selectLevelVo">
+        select level_id, level_name, level_code, min_points, max_points, discount, sort, description, status, del_flag, create_time, update_time from sys_member_level
+    </sql>
+    <select id="selectMemberLevelList" parameterType="com.ruoyi.system.domain.SysMemberLevel" resultMap="SysMemberLevelResult">
+        <include refid="selectLevelVo"/> where del_flag = '0'
+        <if test="levelName != null">AND level_name like concat('%', #{levelName}, '%')</if>
+        <if test="status != null">AND status = #{status}</if>
+        order by sort asc
+    </select>
+    <select id="selectMemberLevelById" parameterType="Long" resultMap="SysMemberLevelResult">
+        <include refid="selectLevelVo"/> where level_id = #{levelId}
+    </select>
+    <select id="checkLevelCodeUnique" resultMap="SysMemberLevelResult">
+        <include refid="selectLevelVo"/> where level_code = #{levelCode} and del_flag = '0'
+    </select>
+    <select id="getLevelByPoints" parameterType="Integer" resultMap="SysMemberLevelResult">
+        <include refid="selectLevelVo"/> where del_flag = '0'
+        <if test="maxPoints != null">AND max_points is null</if>
+        order by min_points desc limit 1
+    </select>
+    <insert id="insertMemberLevel" parameterType="com.ruoyi.system.domain.SysMemberLevel" useGeneratedKeys="true" keyProperty="levelId">
+        insert into sys_member_level (level_name, level_code, min_points, max_points, discount, sort, description, status, create_time)
+        values (#{levelName}, #{levelCode}, #{minPoints}, #{maxPoints}, #{discount}, #{sort}, #{description}, #{status}, sysdate())
+    </insert>
+    <update id="updateMemberLevel" parameterType="com.ruoyi.system.domain.SysMemberLevel">
+        update sys_member_level set level_name = #{levelName}, level_code = #{levelCode}, min_points = #{minPoints}, max_points = #{maxPoints}, 
+        discount = #{discount}, sort = #{sort}, description = #{description}, status = #{status}, update_time = sysdate()
+        where level_id = #{levelId}
+    </update>
+    <delete id="deleteMemberLevelByIds" parameterType="Long">
+        update sys_member_level set del_flag = '1' where level_id in
+        <foreach item="levelId" collection="array" open="(" separator="," close=")">#{levelId}</foreach>
+    </delete>
+</mapper>

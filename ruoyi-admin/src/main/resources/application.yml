@@ -145,3 +145,20 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+# DeepSeek AI配置
+deepseek:
+  # API Key
+  api-key: sk-d295badc99cf4ccdb18e0cbfa64a5721
+  # API地址
+  api-url: https://api.deepseek.com/chat/completions
+  # 模型名称
+  model: deepseek-chat
+  # API请求超时时间（毫秒）
+  timeout: 30000
+  # 最大重试次数
+  max-retries: 3
+  # 温度参数
+  temperature: 0.7
+  # 最大token数
+  max-tokens: 1500

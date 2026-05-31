@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysConsumeMapper">
+    <resultMap type="com.ruoyi.system.domain.SysConsume" id="SysConsumeResult">
+        <result property="consumeId" column="consume_id"/><result property="consumeNo" column="consume_no"/>
+        <result property="playerId" column="player_id"/><result property="playerName" column="player_name"/>
+        <result property="reservationId" column="reservation_id"/><result property="reservationCode" column="reservation_code"/>
+        <result property="storeId" column="store_id"/><result property="storeName" column="store_name"/>
+        <result property="tableId" column="table_id"/><result property="tableName" column="table_name"/>
+        <result property="tableFee" column="table_fee"/><result property="packageFee" column="package_fee"/>
+        <result property="otherFee" column="other_fee"/><result property="totalAmount" column="total_amount"/>
+        <result property="consumeType" column="consume_type"/><result property="payType" column="pay_type"/>
+        <result property="payStatus" column="pay_status"/><result property="payTime" column="pay_time"/>
+        <result property="remark" column="remark"/><result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/><result property="updateTime" column="update_time"/>
+        <result property="verificationCode" column="verification_code"/><result property="verificationStatus" column="verification_status"/>
+        <result property="verificationTime" column="verification_time"/><result property="verifierId" column="verifier_id"/>
+        <result property="verifierName" column="verifier_name"/>
+    </resultMap>
+    <sql id="selectConsumeVo">
+        select consume_id, consume_no, player_id, player_name, reservation_id, reservation_code, store_id, store_name,
+        table_id, table_name, table_fee, package_fee, other_fee, total_amount, consume_type, pay_type, pay_status,
+        pay_time, remark, del_flag, create_time, update_time, verification_code, verification_status,
+        verification_time, verifier_id, verifier_name from sys_consume
+    </sql>
+    <select id="selectConsumeList" parameterType="com.ruoyi.system.domain.SysConsume" resultMap="SysConsumeResult">
+        <include refid="selectConsumeVo"/> where del_flag = '0'
+        <if test="playerName != null and playerName != ''">AND player_name like concat('%', #{playerName}, '%')</if>
+        <if test="storeId != null">AND store_id = #{storeId}</if>
+        <if test="payStatus != null and payStatus != ''">AND pay_status = #{payStatus}</if>
+        order by create_time desc
+    </select>
+    <select id="selectConsumeById" parameterType="Long" resultMap="SysConsumeResult">
+        <include refid="selectConsumeVo"/> where consume_id = #{consumeId}
+    </select>
+    <insert id="insertConsume" parameterType="com.ruoyi.system.domain.SysConsume" useGeneratedKeys="true" keyProperty="consumeId">
+        insert into sys_consume
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="consumeNo != null">consume_no,</if><if test="playerId != null">player_id,</if>
+            <if test="playerName != null">player_name,</if><if test="reservationId != null">reservation_id,</if>
+            <if test="reservationCode != null">reservation_code,</if><if test="storeId != null">store_id,</if>
+            <if test="storeName != null">store_name,</if><if test="tableId != null">table_id,</if>
+            <if test="tableName != null">table_name,</if><if test="tableFee != null">table_fee,</if>
+            <if test="packageFee != null">package_fee,</if><if test="otherFee != null">other_fee,</if>
+            <if test="totalAmount != null">total_amount,</if><if test="consumeType != null">consume_type,</if>
+            <if test="payType != null">pay_type,</if><if test="payStatus != null">pay_status,</if>
+            <if test="remark != null">remark,</if>
+            <if test="verificationCode != null">verification_code,</if><if test="verificationStatus != null">verification_status,</if>
+            <if test="createBy != null">create_by,</if>create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="consumeNo != null">#{consumeNo},</if><if test="playerId != null">#{playerId},</if>
+            <if test="playerName != null">#{playerName},</if><if test="reservationId != null">#{reservationId},</if>
+            <if test="reservationCode != null">#{reservationCode},</if><if test="storeId != null">#{storeId},</if>
+            <if test="storeName != null">#{storeName},</if><if test="tableId != null">#{tableId},</if>
+            <if test="tableName != null">#{tableName},</if><if test="tableFee != null">#{tableFee},</if>
+            <if test="packageFee != null">#{packageFee},</if><if test="otherFee != null">#{otherFee},</if>
+            <if test="totalAmount != null">#{totalAmount},</if><if test="consumeType != null">#{consumeType},</if>
+            <if test="payType != null">#{payType},</if><if test="payStatus != null">#{payStatus},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="verificationCode != null">#{verificationCode},</if><if test="verificationStatus != null">#{verificationStatus},</if>
+            <if test="createBy != null">#{createBy},</if>sysdate()
+        </trim>
+    </insert>
+    <update id="updateConsume" parameterType="com.ruoyi.system.domain.SysConsume">
+        update sys_consume
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="payStatus != null">pay_status = #{payStatus},</if>
+            <if test="payType != null">pay_type = #{payType},</if>
+            <if test="payTime != null">pay_time = #{payTime},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="verificationCode != null">verification_code = #{verificationCode},</if>
+            <if test="verificationStatus != null">verification_status = #{verificationStatus},</if>
+            <if test="verificationTime != null">verification_time = #{verificationTime},</if>
+            <if test="verifierId != null">verifier_id = #{verifierId},</if>
+            <if test="verifierName != null">verifier_name = #{verifierName},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where consume_id = #{consumeId}
+    </update>
+    <delete id="deleteConsumeByIds" parameterType="Long">
+        update sys_consume set del_flag = '1' where consume_id in
+        <foreach item="consumeId" collection="array" open="(" separator="," close=")">#{consumeId}</foreach>
+    </delete>
+    <select id="selectConsumeByVerificationCode" parameterType="String" resultMap="SysConsumeResult">
+        <include refid="selectConsumeVo"/> where verification_code = #{verificationCode} and del_flag = '0'
+    </select>
+</mapper>

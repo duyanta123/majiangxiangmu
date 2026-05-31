@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysReviewMapper">
+    <resultMap type="com.ruoyi.system.domain.SysReview" id="SysReviewResult">
+        <result property="reviewId" column="review_id"/>
+        <result property="storeId" column="store_id"/>
+        <result property="storeName" column="store_name"/>
+        <result property="playerId" column="player_id"/>
+        <result property="playerName" column="player_name"/>
+        <result property="reservationId" column="reservation_id"/>
+        <result property="rating" column="rating"/>
+        <result property="content" column="content"/>
+        <result property="replyContent" column="reply_content"/>
+        <result property="replyTime" column="reply_time"/>
+        <result property="isShow" column="is_show"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="selectReviewVo">
+        select review_id, store_id, store_name, player_id, player_name, reservation_id, rating, content, reply_content,
+        reply_time, is_show, del_flag, create_time, update_time from sys_review
+    </sql>
+    <select id="selectReviewList" parameterType="com.ruoyi.system.domain.SysReview" resultMap="SysReviewResult">
+        <include refid="selectReviewVo"/> where del_flag = '0'
+        <if test="storeId != null">AND store_id = #{storeId}</if>
+        <if test="playerId != null">AND player_id = #{playerId}</if>
+        <if test="reservationId != null">AND reservation_id = #{reservationId}</if>
+        <if test="isShow != null and isShow != ''">AND is_show = #{isShow}</if>
+        order by create_time desc
+    </select>
+    <select id="selectReviewById" parameterType="Long" resultMap="SysReviewResult">
+        <include refid="selectReviewVo"/> where review_id = #{reviewId}
+    </select>
+    <insert id="insertReview" parameterType="com.ruoyi.system.domain.SysReview" useGeneratedKeys="true" keyProperty="reviewId">
+        insert into sys_review
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="storeId != null">store_id,</if>
+            <if test="storeName != null">store_name,</if>
+            <if test="playerId != null">player_id,</if>
+            <if test="playerName != null">player_name,</if>
+            <if test="reservationId != null">reservation_id,</if>
+            <if test="rating != null">rating,</if>
+            <if test="content != null">content,</if>
+            <if test="isShow != null">is_show,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="storeId != null">#{storeId},</if>
+            <if test="storeName != null">#{storeName},</if>
+            <if test="playerId != null">#{playerId},</if>
+            <if test="playerName != null">#{playerName},</if>
+            <if test="reservationId != null">#{reservationId},</if>
+            <if test="rating != null">#{rating},</if>
+            <if test="content != null">#{content},</if>
+            <if test="isShow != null">#{isShow},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+    <update id="updateReview" parameterType="com.ruoyi.system.domain.SysReview">
+        update sys_review
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="replyContent != null">reply_content = #{replyContent},</if>
+            <if test="replyTime != null">reply_time = #{replyTime},</if>
+            <if test="isShow != null">is_show = #{isShow},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where review_id = #{reviewId}
+    </update>
+    <delete id="deleteReviewByIds" parameterType="Long">
+        update sys_review set del_flag = '1' where review_id in
+        <foreach item="reviewId" collection="array" open="(" separator="," close=")">#{reviewId}</foreach>
+    </delete>
+</mapper>

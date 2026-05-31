@@ -45,3 +45,17 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+
+######################################################################
+# Configuration files with sensitive data
+
+# Spring Boot configuration files
+ruoyi-admin/src/main/resources/application.yml
+ruoyi-admin/src/main/resources/application.properties
+ruoyi-admin/src/main/resources/application-*.yml
+ruoyi-admin/src/main/resources/application-*.properties
+
+# Environment variables
+.env
+.env.local
+.env.*.local

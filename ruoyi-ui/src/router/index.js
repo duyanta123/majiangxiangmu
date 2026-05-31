@@ -167,6 +167,18 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
+  },
+  {
+    path: '/system/ai',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/system/ai/index'),
+        name: 'AiCenter',
+        meta: { title: 'AI中心', icon: 'brain', permissions: ['system:ai:view'] }
+      }
+    ]
   }
 ]
 

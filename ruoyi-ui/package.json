@@ -40,6 +40,7 @@
     "quill": "2.0.2",
     "screenfull": "5.0.2",
     "sortablejs": "1.10.2",
+    "spdx-license-ids": "^3.0.23",
     "vue": "2.6.12",
     "vue-count-to": "1.0.13",
     "vue-cropper": "0.5.5",

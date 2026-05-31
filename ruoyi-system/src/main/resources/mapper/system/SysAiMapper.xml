@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysAiMapper">
+
+<insert id="insertScheduleBatch" parameterType="java.util.List">
+    insert into sys_ai_schedule(store_id, store_name, date, time_slot, employee_name, position, workload, status, ai_suggestion, create_time)
+    values
+    <foreach collection="list" item="item" separator=",">
+        (#{item.storeId}, #{item.storeName}, #{item.date}, #{item.timeSlot}, #{item.employeeName}, #{item.position}, #{item.workload}, #{item.status}, #{item.aiSuggestion}, sysdate())
+    </foreach>
+</insert>
+
+<select id="getScheduleList" resultType="com.ruoyi.system.domain.SysAiSchedule">
+    select * from sys_ai_schedule where store_id = #{storeId} and date = #{date} order by time_slot
+</select>
+
+<select id="getScheduleHistory" resultType="com.ruoyi.system.domain.SysAiSchedule">
+    select * from sys_ai_schedule where store_id = #{storeId} order by date desc, time_slot limit 50
+</select>
+
+<update id="updateSchedule" parameterType="com.ruoyi.system.domain.SysAiSchedule">
+    update sys_ai_schedule set
+        employee_name = #{employeeName},
+        position = #{position},
+        workload = #{workload},
+        ai_suggestion = #{aiSuggestion},
+        status = #{status},
+        update_time = sysdate()
+    where schedule_id = #{scheduleId}
+</update>
+
+<delete id="deleteSchedule" parameterType="Long">
+    delete from sys_ai_schedule where schedule_id = #{scheduleId}
+</delete>
+
+<insert id="insertRecommendationBatch" parameterType="java.util.List">
+    insert into sys_ai_recommendation(player_id, player_name, player_phone, rec_type, rec_content, rec_reason, status, expire_time, create_time)
+    values
+    <foreach collection="list" item="item" separator=",">
+        (#{item.playerId}, #{item.playerName}, #{item.playerPhone}, #{item.recType}, #{item.recContent}, #{item.recReason}, #{item.status}, #{item.expireTime}, sysdate())
+    </foreach>
+</insert>
+
+<select id="getRecommendations" resultType="com.ruoyi.system.domain.SysAiRecommendation">
+    select * from sys_ai_recommendation where player_id = #{playerId} and status = '0' order by create_time desc
+</select>
+
+<insert id="insertChat" parameterType="com.ruoyi.system.domain.SysAiChat">
+    insert into sys_ai_chat(player_id, player_name, player_phone, user_input, ai_response, intent, chat_type, create_time)
+    values(#{playerId}, #{playerName}, #{playerPhone}, #{userInput}, #{aiResponse}, #{intent}, #{chatType}, sysdate())
+</insert>
+
+<select id="getChatHistory" resultType="com.ruoyi.system.domain.SysAiChat">
+    select * from sys_ai_chat
+    <if test="playerId != null and playerId > 0">
+        where player_id = #{playerId}
+    </if>
+    order by create_time desc limit 20
+</select>
+
+<select id="getStoreAnalysis" parameterType="Long" resultType="java.util.Map">
+    SELECT 
+        (SELECT COUNT(*) FROM sys_reservation WHERE store_id = #{storeId} AND order_status = '3') as completedOrders,
+        (SELECT COUNT(*) FROM sys_consume WHERE store_id = #{storeId}) as totalConsumes,
+        (SELECT SUM(amount) FROM sys_consume WHERE store_id = #{storeId}) as totalRevenue,
+        (SELECT COUNT(DISTINCT player_id) FROM sys_consume WHERE store_id = #{storeId}) as activePlayers
+</select>
+
+</mapper>

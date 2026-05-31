@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysAnalysisMapper">
+
+<select id="getTodayStats" resultType="java.util.Map">
+    SELECT 
+        COALESCE(SUM(CASE WHEN r.order_status = '3' THEN r.amount ELSE 0 END), 0) as todayReservationRevenue,
+        COALESCE(SUM(c.amount), 0) as todayConsumptionRevenue,
+        COUNT(DISTINCT r.player_id) as todayActivePlayers,
+        COUNT(DISTINCT c.player_id) as todayConsumers
+    FROM sys_reservation r RIGHT JOIN sys_consume c ON 1=1
+    WHERE DATE(r.reserve_date) = CURDATE() OR DATE(c.consume_time) = CURDATE()
+</select>
+
+<select id="getWeekStats" resultType="java.util.Map">
+    SELECT 
+        COALESCE(SUM(CASE WHEN r.order_status = '3' THEN r.amount ELSE 0 END), 0) as weekReservationRevenue,
+        COALESCE(SUM(c.amount), 0) as weekConsumptionRevenue,
+        COUNT(DISTINCT r.player_id) as weekActivePlayers,
+        COUNT(DISTINCT c.player_id) as weekConsumers,
+        COUNT(DISTINCT m.member_id) as weekNewMembers
+    FROM sys_reservation r 
+    RIGHT JOIN sys_consume c ON 1=1
+    RIGHT JOIN sys_member m ON 1=1
+    WHERE (r.reserve_date &gt;= DATE_SUB(CURDATE(), INTERVAL 7 DAY) OR 
+           c.consume_time &gt;= DATE_SUB(CURDATE(), INTERVAL 7 DAY) OR
+           m.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 7 DAY))
+</select>
+
+<select id="getMonthStats" resultType="java.util.Map">
+    SELECT 
+        COALESCE(SUM(CASE WHEN r.order_status = '3' THEN r.amount ELSE 0 END), 0) as monthReservationRevenue,
+        COALESCE(SUM(c.amount), 0) as monthConsumptionRevenue,
+        COUNT(DISTINCT r.player_id) as monthActivePlayers,
+        COUNT(DISTINCT c.player_id) as monthConsumers,
+        COUNT(DISTINCT m.member_id) as monthNewMembers,
+        COUNT(DISTINCT p.player_id) as monthNewPlayers
+    FROM sys_reservation r 
+    RIGHT JOIN sys_consume c ON 1=1
+    RIGHT JOIN sys_member m ON 1=1
+    RIGHT JOIN sys_player p ON 1=1
+    WHERE (r.reserve_date &gt;= DATE_SUB(CURDATE(), INTERVAL 30 DAY) OR 
+           c.consume_time &gt;= DATE_SUB(CURDATE(), INTERVAL 30 DAY) OR
+           m.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 30 DAY) OR
+           p.create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 30 DAY))
+</select>
+
+<select id="getStoreOverview" resultType="java.util.Map">
+    SELECT 
+        (SELECT COUNT(*) FROM sys_store WHERE status = '0') as storeCount,
+        (SELECT COUNT(*) FROM sys_table_info WHERE status = '0') as tableCount,
+        (SELECT COUNT(*) FROM sys_member WHERE status = '0') as memberCount,
+        (SELECT COUNT(*) FROM sys_player WHERE status = '0') as playerCount
+</select>
+
+<select id="getRevenueTrend" parameterType="com.ruoyi.system.dto.AnalysisDTO" resultType="com.ruoyi.system.dto.RevenueStats">
+    SELECT 
+        DATE_FORMAT(d.date, '%Y-%m-%d') as date,
+        COALESCE(SUM(CASE WHEN r.order_status = '3' THEN r.amount ELSE 0 END), 0) as reservationAmount,
+        COALESCE(SUM(c.amount), 0) as consumptionAmount,
+        COALESCE(SUM(CASE WHEN r.order_status = '3' THEN r.amount ELSE 0 END), 0) + COALESCE(SUM(c.amount), 0) as totalAmount
+    FROM (
+        SELECT DATE_SUB(CURDATE(), INTERVAL n DAY) as date FROM 
+        (SELECT 0 as n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6) t
+    ) d
+    LEFT JOIN sys_reservation r ON DATE(r.reserve_date) = d.date AND (r.store_id = #{storeId} OR #{storeId} IS NULL)
+    LEFT JOIN sys_consume c ON DATE(c.consume_time) = d.date AND (c.store_id = #{storeId} OR #{storeId} IS NULL)
+    GROUP BY d.date ORDER BY d.date DESC
+</select>
+
+<select id="getMemberTrend" parameterType="com.ruoyi.system.dto.AnalysisDTO" resultType="com.ruoyi.system.dto.MemberStats">
+    SELECT 
+        DATE_FORMAT(d.date, '%Y-%m-%d') as date,
+        COALESCE(COUNT(DISTINCT CASE WHEN m.create_time &gt;= d.date AND m.create_time &lt; DATE_ADD(d.date, INTERVAL 1 DAY) THEN m.member_id END), 0) as newMembers,
+        COALESCE(COUNT(DISTINCT CASE WHEN c.consume_time &gt;= d.date AND c.consume_time &lt; DATE_ADD(d.date, INTERVAL 1 DAY) THEN c.player_id END), 0) as activeMembers,
+        (SELECT COUNT(*) FROM sys_member WHERE status = '0') as totalMembers
+    FROM (
+        SELECT DATE_SUB(CURDATE(), INTERVAL n DAY) as date FROM 
+        (SELECT 0 as n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6) t
+    ) d
+    LEFT JOIN sys_member m ON m.status = '0' AND (m.store_id = #{storeId} OR #{storeId} IS NULL)
+    LEFT JOIN sys_consume c ON (c.store_id = #{storeId} OR #{storeId} IS NULL)
+    GROUP BY d.date ORDER BY d.date DESC
+</select>
+
+<select id="getStoreBasicStats" parameterType="Long" resultType="java.util.Map">
+    SELECT 
+        s.store_name, s.address, s.phone, s.business_hours,
+        (SELECT COUNT(*) FROM sys_table_info WHERE store_id = #{storeId} AND status = '0') as tableCount,
+        (SELECT COUNT(*) FROM sys_table_info WHERE store_id = #{storeId} AND status = '1') as busyTableCount
+    FROM sys_store s WHERE s.store_id = #{storeId}
+</select>
+
+<select id="getStoreRevenueStats" parameterType="Long" resultType="java.util.Map">
+    SELECT 
+        COALESCE(SUM(CASE WHEN r.order_status = '3' THEN r.amount ELSE 0 END), 0) as totalReservationRevenue,
+        COALESCE(SUM(c.amount), 0) as totalConsumptionRevenue,
+        COUNT(DISTINCT r.order_no) as totalOrders,
+        COUNT(DISTINCT c.consume_no) as totalConsumes
+    FROM sys_reservation r RIGHT JOIN sys_consume c ON 1=1
+    WHERE (r.store_id = #{storeId} OR #{storeId} IS NULL) AND (c.store_id = #{storeId} OR #{storeId} IS NULL)
+</select>
+
+<select id="getStoreMemberStats" parameterType="Long" resultType="java.util.Map">
+    SELECT 
+        COUNT(*) as totalMembers,
+        COALESCE(SUM(m.total_points), 0) as totalPoints,
+        COALESCE(SUM(m.available_points), 0) as availablePoints,
+        COALESCE(AVG(m.total_consumption), 0) as avgConsumption
+    FROM sys_member m WHERE m.status = '0' AND (m.store_id = #{storeId} OR #{storeId} IS NULL)
+</select>
+
+<select id="getConsumptionRanking" parameterType="Integer" resultType="java.util.Map">
+    SELECT m.player_name, m.player_phone, m.total_consumption FROM sys_member m
+    WHERE m.status = '0' ORDER BY m.total_consumption DESC LIMIT #{limit}
+</select>
+
+<select id="getPointsRanking" parameterType="Integer" resultType="java.util.Map">
+    SELECT m.player_name, m.player_phone, m.total_points FROM sys_member m
+    WHERE m.status = '0' ORDER BY m.total_points DESC LIMIT #{limit}
+</select>
+
+<select id="getTableTypeRevenue" parameterType="Long" resultType="java.util.Map">
+    SELECT tt.type_name, SUM(c.amount) as revenue 
+    FROM sys_consume c 
+    LEFT JOIN sys_table_info ti ON c.table_id = ti.table_id 
+    LEFT JOIN sys_table_type tt ON ti.type_id = tt.type_id 
+    WHERE (c.store_id = #{storeId} OR #{storeId} IS NULL)
+    GROUP BY tt.type_name ORDER BY revenue DESC
+</select>
+
+<select id="getTableUtilization" parameterType="Long" resultType="java.util.Map">
+    SELECT ti.table_no, tt.type_name, 
+        COUNT(DISTINCT r.order_no) as orderCount,
+        COUNT(DISTINCT c.consume_no) as consumeCount
+    FROM sys_table_info ti 
+    LEFT JOIN sys_table_type tt ON ti.type_id = tt.type_id
+    LEFT JOIN sys_reservation r ON ti.table_id = r.table_id AND r.order_status = '3'
+    LEFT JOIN sys_consume c ON ti.table_id = c.table_id
+    WHERE ti.status = '0' AND (ti.store_id = #{storeId} OR #{storeId} IS NULL)
+    GROUP BY ti.table_no, tt.type_name ORDER BY ti.table_no
+</select>
+
+</mapper>

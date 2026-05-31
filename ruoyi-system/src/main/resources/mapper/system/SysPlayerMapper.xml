@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysPlayerMapper">
+    <resultMap type="com.ruoyi.system.domain.SysPlayer" id="SysPlayerResult">
+        <result property="playerId" column="player_id"/>
+        <result property="playerName" column="player_name"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="playerPhone" column="player_phone"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="playerAvatar" column="player_avatar"/>
+        <result property="playerType" column="player_type"/>
+        <result property="totalConsumption" column="total_consumption"/>
+        <result property="gender" column="gender"/>
+        <result property="birthday" column="birthday"/>
+        <result property="idCard" column="id_card"/>
+        <result property="address" column="address"/>
+        <result property="totalVisits" column="total_visits"/>
+        <result property="totalSpent" column="total_spent"/>
+        <result property="preferredStore" column="preferred_store"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <sql id="selectPlayerVo">
+        select player_id, player_name, nick_name, player_phone, phone_number, player_avatar, player_type,
+        total_consumption, gender, birthday, id_card, address, total_visits, total_spent,
+        preferred_store, status, del_flag, create_time, update_time, remark from sys_player
+    </sql>
+    <select id="selectPlayerList" parameterType="com.ruoyi.system.domain.SysPlayer" resultMap="SysPlayerResult">
+        <include refid="selectPlayerVo"/> where del_flag = '0'
+        <if test="nickName != null">AND nick_name like concat('%', #{nickName}, '%')</if>
+        <if test="phoneNumber != null">AND phone_number like concat('%', #{phoneNumber}, '%')</if>
+        <if test="playerType != null">AND player_type = #{playerType}</if>
+        <if test="status != null">AND status = #{status}</if>
+        order by create_time desc
+    </select>
+    <select id="selectPlayerById" parameterType="Long" resultMap="SysPlayerResult">
+        <include refid="selectPlayerVo"/> where player_id = #{playerId}
+    </select>
+    <select id="checkPhoneUnique" resultMap="SysPlayerResult">
+        <include refid="selectPlayerVo"/> where player_phone = #{playerPhone} and del_flag = '0'
+    </select>
+    <insert id="insertPlayer" parameterType="com.ruoyi.system.domain.SysPlayer" useGeneratedKeys="true" keyProperty="playerId">
+        insert into sys_player
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="playerName != null">player_name,</if><if test="playerPhone != null">player_phone,</if>
+            <if test="playerAvatar != null">player_avatar,</if><if test="gender != null">gender,</if>
+            <if test="birthday != null">birthday,</if><if test="idCard != null">id_card,</if>
+            <if test="address != null">address,</if><if test="status != null">status,</if>
+            <if test="remark != null">remark,</if><if test="createBy != null">create_by,</if>create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="playerName != null">#{playerName},</if><if test="playerPhone != null">#{playerPhone},</if>
+            <if test="playerAvatar != null">#{playerAvatar},</if><if test="gender != null">#{gender},</if>
+            <if test="birthday != null">#{birthday},</if><if test="idCard != null">#{idCard},</if>
+            <if test="address != null">#{address},</if><if test="status != null">#{status},</if>
+            <if test="remark != null">#{remark},</if><if test="createBy != null">#{createBy},</if>sysdate()
+        </trim>
+    </insert>
+    <update id="updatePlayer" parameterType="com.ruoyi.system.domain.SysPlayer">
+        update sys_player
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="playerName != null">player_name = #{playerName},</if>
+            <if test="playerAvatar != null">player_avatar = #{playerAvatar},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where player_id = #{playerId}
+    </update>
+    <delete id="deletePlayerByIds" parameterType="Long">
+        update sys_player set del_flag = '1' where player_id in
+        <foreach item="playerId" collection="array" open="(" separator="," close=")">#{playerId}</foreach>
+    </delete>
+</mapper>

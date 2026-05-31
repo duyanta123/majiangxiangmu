@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysStoreMapper">
+    <resultMap type="com.ruoyi.system.domain.SysStore" id="SysStoreResult">
+        <result property="storeId" column="store_id"/><result property="storeName" column="store_name"/>
+        <result property="storeCode" column="store_code"/><result property="address" column="address"/>
+        <result property="phone" column="phone"/><result property="businessHours" column="business_hours"/>
+        <result property="managerName" column="manager_name"/><result property="managerPhone" column="manager_phone"/>
+        <result property="storeImage" column="store_image"/><result property="description" column="description"/>
+        <result property="latitude" column="latitude"/><result property="longitude" column="longitude"/>
+        <result property="status" column="status"/><result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/><result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <sql id="selectStoreVo">
+        select store_id, store_name, store_code, address, phone, business_hours, manager_name, manager_phone,
+        store_image, description, latitude, longitude, status, del_flag, create_time, update_time, remark from sys_store
+    </sql>
+    <select id="selectStoreList" parameterType="com.ruoyi.system.domain.SysStore" resultMap="SysStoreResult">
+        <include refid="selectStoreVo"/> where del_flag = '0'
+        <if test="storeName != null">AND store_name like concat('%', #{storeName}, '%')</if>
+        <if test="status != null">AND status = #{status}</if>
+        order by create_time desc
+    </select>
+    <select id="selectStoreById" parameterType="Long" resultMap="SysStoreResult">
+        <include refid="selectStoreVo"/> where store_id = #{storeId}
+    </select>
+    <select id="checkStoreCodeUnique" resultMap="SysStoreResult">
+        <include refid="selectStoreVo"/> where store_code = #{storeCode} and del_flag = '0'
+    </select>
+    <insert id="insertStore" parameterType="com.ruoyi.system.domain.SysStore" useGeneratedKeys="true" keyProperty="storeId">
+        insert into sys_store
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="storeName != null">store_name,</if><if test="storeCode != null">store_code,</if>
+            <if test="address != null">address,</if><if test="phone != null">phone,</if>
+            <if test="businessHours != null">business_hours,</if><if test="managerName != null">manager_name,</if>
+            <if test="managerPhone != null">manager_phone,</if><if test="description != null">description,</if>
+            <if test="status != null">status,</if><if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="storeName != null">#{storeName},</if><if test="storeCode != null">#{storeCode},</if>
+            <if test="address != null">#{address},</if><if test="phone != null">#{phone},</if>
+            <if test="businessHours != null">#{businessHours},</if><if test="managerName != null">#{managerName},</if>
+            <if test="managerPhone != null">#{managerPhone},</if><if test="description != null">#{description},</if>
+            <if test="status != null">#{status},</if><if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>sysdate()
+        </trim>
+    </insert>
+    <update id="updateStore" parameterType="com.ruoyi.system.domain.SysStore">
+        update sys_store
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="storeName != null">store_name = #{storeName},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="businessHours != null">business_hours = #{businessHours},</if>
+            <if test="managerName != null">manager_name = #{managerName},</if>
+            <if test="managerPhone != null">manager_phone = #{managerPhone},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where store_id = #{storeId}
+    </update>
+    <delete id="deleteStoreByIds" parameterType="Long">
+        update sys_store set del_flag = '1' where store_id in
+        <foreach item="storeId" collection="array" open="(" separator="," close=")">#{storeId}</foreach>
+    </delete>
+</mapper>

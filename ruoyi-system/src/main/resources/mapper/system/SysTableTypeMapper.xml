@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysTableTypeMapper">
+
+    <resultMap type="com.ruoyi.system.domain.SysTableType" id="SysTableTypeResult">
+        <result property="typeId" column="type_id"/>
+        <result property="typeName" column="type_name"/>
+        <result property="typeCode" column="type_code"/>
+        <result property="storeId" column="store_id"/>
+        <result property="storeName" column="store_name"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectTableTypeVo">
+        select type_id, type_name, type_code, store_id, store_name, description, status, del_flag, create_time, update_time
+        from sys_table_type
+    </sql>
+
+    <select id="selectTableTypeList" parameterType="com.ruoyi.system.domain.SysTableType" resultMap="SysTableTypeResult">
+        <include refid="selectTableTypeVo"/>
+        where del_flag = '0'
+        <if test="typeName != null and typeName != ''">
+            AND type_name like concat('%', #{typeName}, '%')
+        </if>
+        <if test="typeCode != null and typeCode != ''">
+            AND type_code = #{typeCode}
+        </if>
+        <if test="storeId != null">
+            AND store_id = #{storeId}
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="selectTableTypeById" parameterType="Long" resultMap="SysTableTypeResult">
+        <include refid="selectTableTypeVo"/>
+        where type_id = #{typeId}
+    </select>
+
+    <select id="checkTypeCodeUnique" parameterType="String" resultMap="SysTableTypeResult">
+        <include refid="selectTableTypeVo"/>
+        where type_code = #{typeCode} and del_flag = '0'
+    </select>
+
+    <insert id="insertTableType" parameterType="com.ruoyi.system.domain.SysTableType" useGeneratedKeys="true" keyProperty="typeId">
+        insert into sys_table_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="typeName != null and typeName != ''">type_name,</if>
+            <if test="typeCode != null and typeCode != ''">type_code,</if>
+            <if test="storeId != null">store_id,</if>
+            <if test="storeName != null">store_name,</if>
+            <if test="description != null">description,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="typeName != null and typeName != ''">#{typeName},</if>
+            <if test="typeCode != null and typeCode != ''">#{typeCode},</if>
+            <if test="storeId != null">#{storeId},</if>
+            <if test="storeName != null">#{storeName},</if>
+            <if test="description != null">#{description},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateTableType" parameterType="com.ruoyi.system.domain.SysTableType">
+        update sys_table_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="typeName != null and typeName != ''">type_name = #{typeName},</if>
+            <if test="typeCode != null and typeCode != ''">type_code = #{typeCode},</if>
+            <if test="storeId != null">store_id = #{storeId},</if>
+            <if test="storeName != null">store_name = #{storeName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where type_id = #{typeId}
+    </update>
+
+    <delete id="deleteTableTypeByIds" parameterType="Long">
+        update sys_table_type set del_flag = '1' where type_id in
+        <foreach item="typeId" collection="array" open="(" separator="," close=")">
+            #{typeId}
+        </foreach>
+    </delete>
+
+</mapper>

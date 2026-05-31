@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysMemberMapper">
+    <resultMap type="com.ruoyi.system.domain.SysMember" id="SysMemberResult">
+        <result property="memberId" column="member_id"/><result property="playerId" column="player_id"/>
+        <result property="playerName" column="player_name"/><result property="playerPhone" column="player_phone"/>
+        <result property="levelId" column="level_id"/><result property="levelName" column="level_name"/>
+        <result property="totalPoints" column="total_points"/><result property="availablePoints" column="available_points"/>
+        <result property="totalConsumption" column="total_consumption"/><result property="cardNo" column="card_no"/>
+        <result property="memberSince" column="member_since"/><result property="expireTime" column="expire_time"/>
+        <result property="status" column="status"/><result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/><result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <sql id="selectMemberVo">
+        select member_id, player_id, player_name, player_phone, level_id, level_name, total_points, available_points,
+        total_consumption, card_no, member_since, expire_time, status, del_flag, create_time, update_time, remark from sys_member
+    </sql>
+    <select id="selectMemberList" parameterType="com.ruoyi.system.domain.SysMember" resultMap="SysMemberResult">
+        <include refid="selectMemberVo"/> where del_flag = '0'
+        <if test="playerName != null">AND player_name like concat('%', #{playerName}, '%')</if>
+        <if test="playerPhone != null">AND player_phone like concat('%', #{playerPhone}, '%')</if>
+        <if test="levelId != null">AND level_id = #{levelId}</if>
+        <if test="status != null">AND status = #{status}</if>
+        order by create_time desc
+    </select>
+    <select id="selectMemberById" parameterType="Long" resultMap="SysMemberResult">
+        <include refid="selectMemberVo"/> where member_id = #{memberId}
+    </select>
+    <select id="selectMemberByPlayerId" parameterType="Long" resultMap="SysMemberResult">
+        <include refid="selectMemberVo"/> where player_id = #{playerId} and del_flag = '0'
+    </select>
+    <insert id="insertMember" parameterType="com.ruoyi.system.domain.SysMember" useGeneratedKeys="true" keyProperty="memberId">
+        insert into sys_member
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="playerId != null">player_id,</if><if test="playerName != null">player_name,</if>
+            <if test="playerPhone != null">player_phone,</if><if test="levelId != null">level_id,</if>
+            <if test="levelName != null">level_name,</if><if test="cardNo != null">card_no,</if>
+            <if test="memberSince != null">member_since,</if><if test="expireTime != null">expire_time,</if>
+            <if test="status != null">status,</if><if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="playerId != null">#{playerId},</if><if test="playerName != null">#{playerName},</if>
+            <if test="playerPhone != null">#{playerPhone},</if><if test="levelId != null">#{levelId},</if>
+            <if test="levelName != null">#{levelName},</if><if test="cardNo != null">#{cardNo},</if>
+            <if test="memberSince != null">#{memberSince},</if><if test="expireTime != null">#{expireTime},</if>
+            <if test="status != null">#{status},</if><if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>sysdate()
+        </trim>
+    </insert>
+    <update id="updateMember" parameterType="com.ruoyi.system.domain.SysMember">
+        update sys_member
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="levelId != null">level_id = #{levelId},</if>
+            <if test="levelName != null">level_name = #{levelName},</if>
+            <if test="totalPoints != null">total_points = #{totalPoints},</if>
+            <if test="availablePoints != null">available_points = #{availablePoints},</if>
+            <if test="totalConsumption != null">total_consumption = #{totalConsumption},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where member_id = #{memberId}
+    </update>
+    <delete id="deleteMemberByIds" parameterType="Long">
+        update sys_member set del_flag = '1' where member_id in
+        <foreach item="memberId" collection="array" open="(" separator="," close=")">#{memberId}</foreach>
+    </delete>
+</mapper>
